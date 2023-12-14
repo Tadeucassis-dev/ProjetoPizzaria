@@ -7,6 +7,10 @@ import { Input } from './components/ui/input';
 import { Button } from './components/ui/Button';
 import Link from 'next/link';
 import { AuthContext } from './contexts/AuthContext';
+import { toast } from 'react-toastify';
+import { GetServerSideProps } from 'next';
+import { canSSRGuest } from '@/utils/canSSRGuest';
+import {Text} from '@chakra-ui/react'
 
 export default function Home() {
  const { signIn } = useContext(AuthContext)
@@ -18,12 +22,22 @@ export default function Home() {
  async function handleLogin(event: FormEvent) {
   event.preventDefault();
 
+  if (email === '' || password === "") {
+   toast.error('Preencha todos os campos!')
+   return;
+  }
+
+  setLoading(true);
+
   let data = {
    email,
    password
   }
 
   await signIn(data)
+
+  setLoading(false)
+
  }
 
  return (
@@ -52,18 +66,28 @@ export default function Home() {
 
       <Button
        type="submit"
-       loading={false}
+       loading={loading}
       >
        Acessar
       </Button>
 
      </form>
-     <Link href="/signup" legacyBehavior>
-      <a className={styles.text}>Não possui uma conta? Cadastre-se</a>
+     <Link href="/signup">
+      <Text
+      color={'white'}
+      >
+       Não possui uma conta? Cadastre-se
+      </Text>
      </Link>
     </div>
    </div>
   </>
  )
 }
+
+export const getServerSideProps = canSSRGuest(async (ctx) => {
+ return {
+  props: {}
+ }
+})
 
